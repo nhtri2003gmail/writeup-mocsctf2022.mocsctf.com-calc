@@ -134,7 +134,7 @@ So we change that with the following code:
 setnumber(-2, 0x100)
 ```
 
-Now the maximum index is 0x100, that's enough for us to exploit. Then, leaking canary will be the easy part, not easiest, because we know that `Calculate` will sum all the data on stack from index 0 to index of our input. For a faster leak, I will set all the data previous canary to 0x0 so when it `Calculate`, it just print our the stack canary.
+Now the maximum index is 0x100, that's enough for us to exploit. Then, leaking canary will be the easy part, not easiest, because we know that `Calculate` will sum all the data on stack from index 0 to index of our input. For an easier leak, I will set all the data previous canary to 0x0 so when it `Calculate`, it just print our the stack canary.
 
 So first, we set all the data before canary to 0x0 with the following code:
 
@@ -159,7 +159,7 @@ Run several time and we get the negative canary value. Why is it negative? I tho
 
 ![print_result.png](images/print_result.png)
 
-The output format is `%lld`, which from `0` to `0x7fffffffffffffff` will be positive number, but from `0x8000000000000000` to `0xffffffffffffffff` will be negative number. So to deal with that leak, we will use [struct](https://docs.python.org/3/library/struct.html) (a module in python) to convert from that long int to hex:
+The output format is `%lld`, which from `0` to `0x7fffffffffffffff` will be positive number, but from `0x8000000000000000` to `0xffffffffffffffff` will be negative number. So to deal with that leak, we will use [struct](https://docs.python.org/3/library/struct.html) (a module in python) to convert from that long int into hex:
 
 ```
 canary = u64(struct.pack('<q', data))
