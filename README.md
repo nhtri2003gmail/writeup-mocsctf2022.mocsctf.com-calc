@@ -16,7 +16,6 @@ First, we use `file` to check for basic information:
 
 ```
 $ file calc
-
 calc: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=ea3703cc9b093c54402a5461acb0d88249d219f0, for GNU/Linux 3.2.0, not stripped
 ```
 
@@ -42,7 +41,6 @@ It will read and print out the flag for us. Very interesting! And another essent
 The first thing in main() we can see is that with the first option `Set Numbers`, it get the position **without checking if it's a negative number or not** and compare with `local_d8` which containing `20`:
 
 ![main_local_d8.png](images/main_local_d8.png)
-
 ![main_input_pos.png](images/main_input_pos.png)
 
 Then it take this pos variable, add `local_c8` and scanf():
