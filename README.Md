@@ -98,7 +98,7 @@ So we will change `local_d8` from 20 to a larger number so that when we get valu
 Before we start our exploitation, I write those function to make our exploitation easier
 
 <details>
-<summary></summary>
+<summary>Code snippet</summary>
 <p>
 
 ```
@@ -127,6 +127,56 @@ And now, we start!
 First, we will change the maximum of index from 20 to 0x100 with the `Set Number` option. Having a look in GDB, we know that the index which point to max index variable is `-2`:
 
 ![max_index_in_GDB.png](images/max_index_in_GDB.png)
+
+So we change that with the following code:
+
+```
+setnumber(-2, 0x100)
+```
+
+Now the maximum index is 0x100, that's enough for us to exploit. Then, leaking canary will be the easy part, not easiest, because we know that `Calculate` will sum all the data on stack from index 0 to index of our input. For a faster leak, I will set all the data previous canary to 0x0 so when it `Calculate`, it just print our the stack canary.
+
+So first, we set all the data before canary to 0x0 with the following code:
+
+```
+for i in range(23):
+	setnumber(i, 0)
+```
+
+And now, we just leak the canary:
+
+```
+calculate(24)
+data = int(p.recvline()[:-1].split(b':')[1])
+print(data)
+```
+
+Running all of them should get us the canary:
+
+![negative_canary.png](images/negative_canary.png)
+
+Run several time and we get the negative canary value. Why is it negative? I thought the stack just like `0xffffffff`, there is no way it can be negative. The answer is it can be negative because:
+
+![print_result.png](images/print_result.png)
+
+The output format is `%lld`, which from `0` to `0x7fffffffffffffff` will be positive number, but from `0x8000000000000000` to `0xffffffffffffffff` will be negative number. So to deal with that leak, we will use [struct](https://docs.python.org/3/library/struct.html) (a module in python) to convert from that long int to hex:
+
+```
+canary = u64(struct.pack('<q', data))
+
+# Just for printing the leak canary
+log.success('Leak canary: ' + hex(canary))
+```
+
+Running the script several time and we get the negative leaked canary in hex:
+
+![canary_leaked.png](images/canary_leaked.png)
+
+Compared with canary in GDB:
+
+![canary_leaked_in_GDB.png](images/canary_leaked_in_GDB.png)
+
+And that's correct! We got the stack canary leaked! Let's move on final stage: Get flag!
 
 ### Stage 2: Get flag
 
